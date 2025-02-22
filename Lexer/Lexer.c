@@ -43,6 +43,18 @@ const char *special_symbols[] = {
     "(", ")", "{", "}", "[", "]", ";", ",", ":"
 };
 
+// Function prototypes
+int isKeyword(const char *word);
+Token createToken(TokenType type, const char *value);
+void tokenize(const char *input);
+void handleComment(const char *input, int *i, int isMultiLine);
+void handleOperator(const char *input, int *i);
+void handleSpecialSymbol(const char *input, int *i);
+void handleString(const char *input, int *i);
+void handleNumber(const char *input, int *i);
+void handleIdentifier(const char *input, int *i, int *isVariable, int *isClassVariable);
+int isVariableDeclared(const char *word);
+
 // Check if a string is a keyword
 int isKeyword(const char *word) {
     for (int i = 0; keywords[i] != NULL; i++) {
@@ -144,4 +156,15 @@ void handleComment(const char *input, int *i, int isMultiLine) {
     buffer[bufferIndex] = '\0';
     Token token = createToken(TOKEN_COMMENT, buffer);
     printf("%s Comment: %s\n", isMultiLine ? "Multi-line" : "Single-line", token.value);
+}
+
+// Handle operators
+void handleOperator(const char *input, int *i) {
+    char operatorStr[3] = {input[*i], '\0', '\0'};
+    if (input[*i + 1] == '=' || input[*i + 1] == operatorStr[0]) {
+        operatorStr[1] = input[++(*i)];
+    }
+    Token token = createToken(TOKEN_OPERATOR, operatorStr);
+    printf("Operator: %s\n", token.value);
+    (*i)++;
 }
