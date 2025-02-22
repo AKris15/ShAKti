@@ -121,3 +121,27 @@ void tokenize(const char *input) {
         }
     }
 }
+
+// Handle comments
+void handleComment(const char *input, int *i, int isMultiLine) {
+    char buffer[1000];
+    int bufferIndex = 0;
+    *i += 2;
+
+    while (1) {
+        char c = input[*i];
+        if (isMultiLine && c == '*' && input[*i + 1] == '/') {
+            *i += 2;
+            break;
+        } else if (!isMultiLine && (c == '\n' || c == '\0')) {
+            break;
+        } else if (c == '\0') {
+            printf("Error: Unterminated comment\n");
+            return;
+        }
+        buffer[bufferIndex++] = input[(*i)++];
+    }
+    buffer[bufferIndex] = '\0';
+    Token token = createToken(TOKEN_COMMENT, buffer);
+    printf("%s Comment: %s\n", isMultiLine ? "Multi-line" : "Single-line", token.value);
+}
