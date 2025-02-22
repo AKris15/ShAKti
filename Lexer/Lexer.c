@@ -75,3 +75,49 @@ Token createToken(TokenType type, const char *value) {
     token.value[sizeof(token.value) - 1] = '\0';
     return token;
 }
+
+// Tokenize input
+void tokenize(const char *input) {
+    int i = 0;
+    int isVariable = 0, isClassVariable = 0;
+    printf("\nLexical Analysis:\n");
+
+    while (input[i] != '\0') {
+        char c = input[i];
+
+        if (isspace(c)) {
+            i++;
+            continue;
+        }
+
+        if (c == '/' && input[i + 1] == '/') {
+            handleComment(input, &i, 0);
+            continue;
+        }
+
+        if (c == '/' && input[i + 1] == '*') {
+            handleComment(input, &i, 1);
+            continue;
+        }
+
+        if (strchr("+-*/=><!&|?", c)) {
+            handleOperator(input, &i);
+            continue;
+        }
+
+        if (strchr("(){}[],;:", c)) {
+            handleSpecialSymbol(input, &i);
+            continue;
+        }
+
+        if (isdigit(c)) {
+            handleNumber(input, &i);
+            continue;
+        }
+
+        if (c == '"') {
+            handleString(input, &i);
+            continue;
+        }
+    }
+}
