@@ -42,3 +42,13 @@ const char *operators[] = {
 const char *special_symbols[] = {
     "(", ")", "{", "}", "[", "]", ";", ",", ":"
 };
+
+// Check if a string is a keyword
+int isKeyword(const char *word) {
+    for (int i = 0; keywords[i] != NULL; i++) {
+        if (strcmp(word, keywords[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
