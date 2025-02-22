@@ -15,10 +15,10 @@ The **ShAKti Parser** is responsible for analyzing the structure of Sanskrit-ins
 ---
 
 ## 🔧 Features
-✅ **Syntax Tree Generation** – Transforms token streams into structured syntax.
-✅ **Handles Complex Expressions** – Supports nested and multi-level expressions.
-✅ **Error Reporting** – Pinpoints syntax issues for debugging.
-✅ **Efficient Memory Management** – Optimized to handle large codebases.
+✅ **Syntax Tree Generation** – Transforms token streams into structured syntax.<br>
+✅ **Handles Complex Expressions** – Supports nested and multi-level expressions.<br>
+✅ **Error Reporting** – Pinpoints syntax issues for debugging.<br>
+✅ **Efficient Memory Management** – Optimized to handle large codebases.<br>
 
 ---
 
