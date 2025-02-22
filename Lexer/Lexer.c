@@ -26,3 +26,8 @@ typedef struct {
     TokenType type;
     char value[100];
 } Token;
+
+// Keywords in Sanskrit
+const char *keywords[] = {
+    "पूर्ण", "यदि", "अन्यथा", "चक्र", "से", "तक", "लेख", "प्रवे", "कक्ष", "वा यदि", "न", NULL
+};
