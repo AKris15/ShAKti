@@ -27,11 +27,11 @@ ShAKti is more than just a language—it’s a new way to think about programmin
 
 ## 🔧 Features
 
-✅ **Sanskrit-like Syntax** – A fresh approach to writing code with clarity.
-✅ **Custom Lexer & Parser** – Ensuring robust and efficient code parsing.
-✅ **Integrated Text Editor (Namo)** – A dedicated environment for writing and executing ShAKti code, built from scratch in C.
-✅ **Strong Type System** – Encouraging disciplined and structured programming.
-✅ **Memory Efficient** – Optimized for minimal resource usage.
+✅ **Sanskrit-like Syntax** – A fresh approach to writing code with clarity.<br>
+✅ **Custom Lexer & Parser** – Ensuring robust and efficient code parsing.<br>
+✅ **Integrated Text Editor (Namo)** – A dedicated environment for writing and executing ShAKti code, built from scratch in C.<br>
+✅ **Strong Type System** – Encouraging disciplined and structured programming.<br>
+✅ **Memory Efficient** – Optimized for minimal resource usage.<br>
 ✅ **Cross-Language Compatibility in Namo** – While designed for ShAKti, Namo aims to be a versatile text editor compatible with other programming languages as well.
 
 ---
