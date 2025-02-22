@@ -62,3 +62,16 @@ int isVariableDeclared(const char *word) {
     }
     return 0;
 }
+
+// Variable tracking
+char variables[100][100];
+int variable_count = 0;
+
+// Create a token
+Token createToken(TokenType type, const char *value) {
+    Token token;
+    token.type = type;
+    strncpy(token.value, value, sizeof(token.value) - 1);
+    token.value[sizeof(token.value) - 1] = '\0';
+    return token;
+}
