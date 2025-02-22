@@ -52,3 +52,13 @@ int isKeyword(const char *word) {
     }
     return 0;
 }
+
+// Check if a variable is declared
+int isVariableDeclared(const char *word) {
+    for (int i = 0; i < variable_count; i++) {
+        if (strcmp(variables[i], word) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
