@@ -15,9 +15,9 @@ The **ShAKti Lexer** is a fundamental component of the ShAKti programming langua
 ---
 
 ## 🔧 Features
-✅ **Recognizes Sanskrit Keywords** – Identifies ShAKti-specific reserved words.
-✅ **Efficient Tokenization** – Optimized for speed and memory management.
-✅ **Handles Comments & Whitespace** – Ensures smooth processing.
+✅ **Recognizes Sanskrit Keywords** – Identifies ShAKti-specific reserved words.<br>
+✅ **Efficient Tokenization** – Optimized for speed and memory management.<br>
+✅ **Handles Comments & Whitespace** – Ensures smooth processing.<br>
 
 ---
 
