@@ -53,7 +53,6 @@ const wchar_t *special_symbols[] = {
     L"(", L")", L"{", L"}", L"[", L"]", L";", L",", L":"
 };
 
-
 // Variable and function tracking
 wchar_t variables[100][100];
 int variable_count = 0;
@@ -72,12 +71,12 @@ void handleString(const wchar_t *input, int *i);
 void handleCharLiteral(const wchar_t *input, int *i);
 void handleNumber(const wchar_t *input, int *i);
 void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClassVariable, int *isFunction);
-wchar_t *getInput();  
+wchar_t *readFile(const char *filename);
 int isVariableDeclared(const wchar_t *word);
 int isFunctionDeclared(const wchar_t *word);
 
 // Check if a string is a keyword
-int isKeyword(const wchar_t *word){
+int isKeyword(const wchar_t *word) {
     for (int i = 0; keywords[i] != NULL; i++) {
         if (wcscmp(word, keywords[i]) == 0) {
             return 1;
@@ -95,11 +94,10 @@ int isBooleanLiteral(const wchar_t *word) {
     }
     return 0;
 }
-// Alpha Check
+
+// Check if a character is a Sanskrit alphabet
 int isSanskritAlpha(wchar_t c) {
-    // Check if the character belongs to the Devanagari script range
-    return (c >= L'\u0900' && c <= L'\u097F') ||  // Devanagari block
-           (c >= L'\uA8E0' && c <= L'\uA8FF');  // Extended Devanagari block
+    return (c >= L'\u0900' && c <= L'\u097F') || (c >= L'\uA8E0' && c <= L'\uA8FF');
 }
 
 // Check if a function is declared
@@ -127,22 +125,21 @@ Token createToken(TokenType type, const wchar_t *value) {
     Token token;
     token.type = type;
     wcsncpy(token.value, value, sizeof(token.value) / sizeof(wchar_t) - 1);
-    token.value[sizeof(token.value) / sizeof(wchar_t) - 1] = L'\0';  // Explicitly null-terminate
+    token.value[sizeof(token.value) / sizeof(wchar_t) - 1] = L'\0';
     return token;
 }
-
 
 // Tokenize input
 void tokenize(const wchar_t *input) {
     int i = 0;
     long int line = 1, column = 1;
     int isVariable = 0, isClassVariable = 0, isFunction = 0;
-    
+
     printf("\nLexical Analysis:\n");
-        while (input[i] != L'\0') {
+    while (input[i] != L'\0') {
         wchar_t c = input[i];
-        
-        if (c == '\n') {
+
+        if (c == L'\n') {
             line++;
             column = 1;
         } else {
@@ -154,12 +151,12 @@ void tokenize(const wchar_t *input) {
             continue;
         }
 
-        if (c == '/' && input[i + 1] == '/') {
+        if (c == L'/' && input[i + 1] == L'/') {
             handleComment(input, &i, 0);
             continue;
         }
 
-        if (c == '/' && input[i + 1] == '*') {
+        if (c == L'/' && input[i + 1] == L'*') {
             handleComment(input, &i, 1);
             continue;
         }
@@ -183,18 +180,18 @@ void tokenize(const wchar_t *input) {
             handleString(input, &i);
             continue;
         }
-        
+
         if (c == L'\'') {
             handleCharLiteral(input, &i);
             continue;
         }
-        
-        if (isSanskritAlpha(c) || (c & 0x80)) { // Unicode support
+
+        if (isSanskritAlpha(c) || (c & 0x80)) {
             handleIdentifier(input, &i, &isVariable, &isClassVariable, &isFunction);
             continue;
         }
 
-        wchar_t unknown[2] = {c, '\0'};
+        wchar_t unknown[2] = {c, L'\0'};
         Token token = createToken(TOKEN_UNKNOWN, unknown);
         printf("Unknown: %ls\n", token.value);
         i++;
@@ -203,6 +200,7 @@ void tokenize(const wchar_t *input) {
     Token eofToken = createToken(TOKEN_EOF, L"EOF");
     printf("End of Input: %ls\n", eofToken.value);
 }
+
 // Handle CharLiteral
 void handleCharLiteral(const wchar_t *input, int *i) {
     wchar_t buffer[2] = {input[*i], L'\0'};
@@ -219,24 +217,22 @@ void handleComment(const wchar_t *input, int *i, int isMultiLine) {
     *i += 2;
     while (1) {
         wchar_t c = input[*i];
-        if (bufferIndex >= 999) {  // Avoid buffer overflow
+        if (bufferIndex >= 999) {
             wprintf(L"Error: Comment too long!\n");
             break;
         }
         if (isMultiLine) {
-            
-            if (c == '/' && input[*i + 1] == '*') {
-                nestedCommentCount++; // Start of a new nested comment
+            if (c == L'/' && input[*i + 1] == L'*') {
+                nestedCommentCount++;
                 *i += 2;
                 continue;
             }
-            if (c == '\0') {
+            if (c == L'\0') {
                 wprintf(L"Error: Unterminated multi-line comment!\n");
                 break;
-            }
-            else if (c == '*' && input[*i + 1] == '/') {
+            } else if (c == L'*' && input[*i + 1] == L'/') {
                 if (nestedCommentCount > 0) {
-                    nestedCommentCount--; // End of a nested comment
+                    nestedCommentCount--;
                     *i += 2;
                     continue;
                 } else {
@@ -244,23 +240,21 @@ void handleComment(const wchar_t *input, int *i, int isMultiLine) {
                     break;
                 }
             }
-        }
-        // If single-line comment, just break at end of line or EOF
-        else if (c == '\n' || c == '\0') {
+        } else if (c == L'\n' || c == L'\0') {
             break;
         }
 
         buffer[bufferIndex++] = input[(*i)++];
     }
-    buffer[bufferIndex] = '\0';
+    buffer[bufferIndex] = L'\0';
     Token token = createToken(TOKEN_COMMENT, buffer);
-    printf("%s Comment: %s\n", isMultiLine ? "Multi-line" : "Single-line", token.value);
+    printf("%s Comment: %ls\n", isMultiLine ? "Multi-line" : "Single-line", token.value);
 }
 
 // Handle operators
 void handleOperator(const wchar_t *input, int *i) {
-    wchar_t operatorStr[3] = {input[*i], '\0', '\0'};
-    if (input[*i + 1] == '=' || input[*i + 1] == operatorStr[0]) {
+    wchar_t operatorStr[3] = {input[*i], L'\0', L'\0'};
+    if (input[*i + 1] == L'=' || input[*i + 1] == operatorStr[0]) {
         operatorStr[1] = input[++(*i)];
     }
     Token token = createToken(TOKEN_OPERATOR, operatorStr);
@@ -270,7 +264,7 @@ void handleOperator(const wchar_t *input, int *i) {
 
 // Handle special symbols
 void handleSpecialSymbol(const wchar_t *input, int *i) {
-    wchar_t symbol[2] = {input[*i], '\0'};
+    wchar_t symbol[2] = {input[*i], L'\0'};
     Token token = createToken(TOKEN_SPECIAL_SYMBOL, symbol);
     printf("Special Symbol: %ls\n", token.value);
     (*i)++;
@@ -306,10 +300,10 @@ void handleString(const wchar_t *input, int *i) {
 void handleNumber(const wchar_t *input, int *i) {
     wchar_t buffer[100];
     int bufferIndex = 0;
-    while (iswdigit(input[*i]) || input[*i] == '.') {
+    while (iswdigit(input[*i])) {
         buffer[bufferIndex++] = input[(*i)++];
     }
-    buffer[bufferIndex] = '\0';
+    buffer[bufferIndex] = L'\0';
     Token token = createToken(TOKEN_NUMBER, buffer);
     printf("Number: %ls\n", token.value);
 }
@@ -320,7 +314,7 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
     int bufferIndex = 0;
 
     while (isSanskritAlpha(input[*i]) || iswdigit(input[*i]) || input[*i] == L'_') {
-        if (bufferIndex >= 99) {  // Prevent buffer overflow
+        if (bufferIndex >= 99) {
             wprintf(L"Error: Identifier too long!\n");
             buffer[bufferIndex] = L'\0';
             break;
@@ -364,7 +358,7 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
         wcscpy(functions[function_count++], buffer);
         Token token = createToken(TOKEN_FUNCTION, buffer);
         printf("Function: %ls\n", token.value);
-        *isFunction = 0;  // Reset function flag
+        *isFunction = 0;
         return;
     }
 
@@ -392,7 +386,7 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
         wcscpy(variables[variable_count++], buffer);
         Token token = createToken(TOKEN_VARIABLE, buffer);
         printf("Variable: %ls\n", token.value);
-        *isVariable = 0;  // Reset variable flag
+        *isVariable = 0;
         return;
     }
 
@@ -400,7 +394,7 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
     if (*isClassVariable) {
         Token token = createToken(TOKEN_CLASSED_VARIABLE, buffer);
         printf("Class Variable: %ls\n", token.value);
-        *isClassVariable = 0;  // Reset class variable flag
+        *isClassVariable = 0;
         return;
     }
 
@@ -410,38 +404,35 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
 }
 
 // Read file into a wide character buffer
-
 wchar_t *readFile(const char *filename) {
-    FILE *file = fopen(filename, "r, ccs=UTF-8"); // Open in wide mode
+    FILE *file = fopen(filename, "r, ccs=UTF-8");
     if (!file) {
         wprintf(L"Error: Unable to open file %s\n", filename);
         return NULL;
     }
 
-    // Move to the end to get the file size
     fseek(file, 0, SEEK_END);
     long length = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    // Allocate wide character buffer
-    wchar_t *wbuffer = (wchar_t *)malloc((length + 1) * sizeof(wchar_t));
-    if (!wbuffer) {
+    wchar_t *buffer = (wchar_t *)malloc((length + 1) * sizeof(wchar_t));
+    if (!buffer) {
         wprintf(L"Memory allocation failed!\n");
         fclose(file);
         return NULL;
     }
 
-    // Read file directly as wide characters
     size_t index = 0;
     wint_t ch;
     while ((ch = fgetwc(file)) != WEOF) {
-        wbuffer[index++] = (wchar_t)ch;
+        buffer[index++] = (wchar_t)ch;
     }
-    wbuffer[index] = L'\0';
+    buffer[index] = L'\0';
 
     fclose(file);
-    return wbuffer;
+    return buffer;
 }
+
 // Main function
 int main(int argc, char *argv[]) {
     setlocale(LC_CTYPE, "hi_IN.UTF-8");
