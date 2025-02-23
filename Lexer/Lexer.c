@@ -99,7 +99,7 @@ int isBooleanLiteral(const wchar_t *word) {
 int isSanskritAlpha(wchar_t c) {
     // Check if the character belongs to the Devanagari script range
     return (c >= L'\u0900' && c <= L'\u097F') ||  // Devanagari block
-           (c >= L'\uA8E0' && c <= L'\uA8FF');   // Extended Devanagari block
+           (c >= L'\uA8E0' && c <= L'\uA8FF');  // Extended Devanagari block
 }
 
 // Check if a function is declared
@@ -126,10 +126,11 @@ int isVariableDeclared(const wchar_t *word) {
 Token createToken(TokenType type, const wchar_t *value) {
     Token token;
     token.type = type;
-    wcsncpy(token.value, value, sizeof(token.value) - 1);
-    token.value[sizeof(token.value) - 1] = '\0';
+    wcsncpy(token.value, value, sizeof(token.value) / sizeof(wchar_t) - 1);
+    token.value[sizeof(token.value) / sizeof(wchar_t) - 1] = L'\0';  // Explicitly null-terminate
     return token;
 }
+
 
 // Tokenize input
 void tokenize(const wchar_t *input) {
@@ -218,6 +219,10 @@ void handleComment(const wchar_t *input, int *i, int isMultiLine) {
     *i += 2;
     while (1) {
         wchar_t c = input[*i];
+        if (bufferIndex >= 999) {  // Avoid buffer overflow
+            wprintf(L"Error: Comment too long!\n");
+            break;
+        }
         if (isMultiLine) {
             if (c == '/' && input[*i + 1] == '*') {
                 nestedCommentCount++; // Start of a new nested comment
@@ -308,9 +313,15 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
     wchar_t buffer[100];
     int bufferIndex = 0;
     while (isSanskritAlpha(input[*i]) || (input[*i] & 0x80)) {
+        if (bufferIndex >= 99) {  // Prevent buffer overflow
+            wprintf(L"Error: Identifier too long!\n");
+            buffer[bufferIndex] = L'\0';
+            break;
+        }
         buffer[bufferIndex++] = input[(*i)++];
     }
-    buffer[bufferIndex] = '\0';
+    buffer[bufferIndex] = L'\0';
+
     
     // Check if it's a function (e.g., using the 'कर्म' keyword)
     if (wcscmp(buffer, L"कर्म") == 0) {
@@ -320,10 +331,15 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
     
     // Handle the function declaration
     if (*isFunction) {
-        wcscat(functions[function_count++], buffer);
+        if (function_count >= 100) {
+            printf("Error: Too many functions!\n");
+            return;
+        }
+        wcscpy(functions[function_count++], buffer);
         Token token = createToken(TOKEN_FUNCTION, buffer);
-        printf("Function: %s\n", token.value);
+        printf("Function: %ls\n", token.value);
         *isFunction = 0;
+        return;
     }
     
     // Check if it is a keyword first
@@ -350,10 +366,14 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
     }
     // If it's a new variable
     else if (*isVariable) {
+        if (variable_count >= 100) {  // Check for array bounds
+            wprintf(L"Error: Too many variables!\n");
+            *isVariable = 0;
+            return;
+        }
         wcsncpy(variables[variable_count++], buffer, sizeof(variables[0]) - 1);
-        variables[variable_count - 1][sizeof(variables[0]) - 1] = L'\0';
         Token token = createToken(TOKEN_VARIABLE, buffer);
-        printf("Variable: %s\n", token.value);
+        printf("Variable: %ls\n", token.value);
         *isVariable = 0;
     }
     // If it's a class variable
@@ -375,15 +395,14 @@ wchar_t *getInput() {
         printf("Memory allocation failed!\n");
         return NULL;
     }
-    input[0] = L'\0';  // Initialize as an empty string
-
+    input[0] = L'\0';
     size_t len = 0;
     printf("Enter your Sanskrit program (type '|' alone to stop):\n");
 
     while (1) {
         wchar_t buffer[256];
         if (!fgetws(buffer, sizeof(buffer) / sizeof(wchar_t), stdin)) {
-            break; // Stop reading if input fails
+            break;
         }
 
         // Check if the input is just "|"
@@ -394,13 +413,16 @@ wchar_t *getInput() {
         size_t bufferLen = wcslen(buffer);
 
         // Ensure enough space in input buffer
-        wchar_t *newInput = realloc(input, (len + bufferLen + 1) * sizeof(wchar_t));  
-        if (!newInput) {
-            printf("Memory reallocation failed!\n");
-            free(input);
-            return NULL;
+        if (len + bufferLen + 1 > bufferSize) {  // Expand `input` if necessary
+            bufferSize = (len + bufferLen + 1) * 2;
+            wchar_t *newInput = realloc(input, (len + bufferLen + 1) * sizeof(wchar_t));  
+            if (!newInput) {
+                wprintf(L"Memory reallocation failed!\n");
+                free(input);
+                return NULL;
+            }
+            input = newInput;
         }
-        input = newInput;
 
         // Use `wcscpy` when `len == 0`, otherwise use `wcscat`
         if (len == 0) {
@@ -412,6 +434,7 @@ wchar_t *getInput() {
         len += bufferLen;
     }
 
+    input[len] = L'\0';
     return input;
 }
 // Main function
@@ -419,12 +442,12 @@ int main() {
     setlocale(LC_CTYPE, "en_US.UTF-8");
     wchar_t *program = getInput();
 
-    if (program) {
-        tokenize(program);
-        free(program);
-    } else {
-        printf("Error in reading input!\n");
+    if (!program) {
+        wprintf(L"Error: Failed to read input.\n");
+        return 1;
     }
 
+    tokenize(program);
+    free(program);
     return 0;
 }
