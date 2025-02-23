@@ -1,24 +1,24 @@
 #include <stdio.h>
-#include <ctype.h>
+#include <stdlib.h>
+#include <wctype.h>
 #include <string.h>
 #include <wchar.h>
 #include <locale.h>
-#include <stdlib.h>
 
-// Define token types
+// Token types
 typedef enum {
     TOKEN_KEYWORD,
     TOKEN_IDENTIFIER,
     TOKEN_VARIABLE,
     TOKEN_CLASSED_VARIABLE,
     TOKEN_FUNCTION,
-    TOKEN_CLASS,
-    TOKEN_ARRAY,
     TOKEN_NUMBER,
     TOKEN_OPERATOR,
     TOKEN_STRING,
+    TOKEN_wchar_t,
     TOKEN_COMMENT,
     TOKEN_SPECIAL_SYMBOL,
+    TOKEN_BOOLEAN,
     TOKEN_EOF,
     TOKEN_UNKNOWN
 } TokenType;
@@ -26,297 +26,436 @@ typedef enum {
 // Token structure
 typedef struct {
     TokenType type;
-    char value[100];
-    int line;
-    int column;
+    wchar_t value[100];
 } Token;
 
-// List of keywords in Sanskrit
-const char *keywords[] = {
-    "पूर्ण",    // Integer
-    "यदि",     // If
-    "अन्यथा",  // Else
-    "चक्र",    // Loop
-    "से",      // From
-    "तक",      // To
-    "लेख",     // Print
-    "प्रवे",    // Input
-    "कक्षा",    // Class
-    NULL
+// Keywords in Sanskrit
+const wchar_t *keywords[] = {
+    L"पूर्ण", L"यदि", L"अन्यथा", 
+    L"चक्र", L"से", L"तक", L"लेख", 
+    L"प्रवे", L"कक्ष", L"वा यदि", 
+    L"न", L"कर्म" , NULL
 };
 
-// List of operators
-const char *operators[] = {
-    "+", "-", "*", "/", "=", ">", "<", ">=", "<=", "==", "!=", "&&", "||", "!"
+// Boolean literals
+const wchar_t *boolean_literals[] = {
+    L"सत्य", L"असत्य", NULL
 };
 
-// List of special symbols
-const char *special_symbols[] = {
-    "(", ")", "{", "}", "[", "]", ";", ","
+// Operators
+const wchar_t *operators[] = {
+    L"+", L"-", L"*", L"/", L"=", L">", L"<", L">=", L"<=", L"==", L"!=", L"&&", L"||", L"!",
+    L"?", L"+=", L"-=", L"*=", L"/="
 };
+
+// Special symbols
+const wchar_t *special_symbols[] = {
+    L"(", L")", L"{", L"}", L"[", L"]", L";", L",", L":"
+};
+
+
+// Variable and function tracking
+wchar_t variables[100][100];
+int variable_count = 0;
+wchar_t functions[100][100];
+int function_count = 0;
 
 // Function prototypes
-int isKeyword(const char *word);
-int isOperator(const char *op);
-int isSpecialSymbol(const char *symbol);
-Token createToken(TokenType type, const char *value, int line, int column);
-void tokenize(const char *input);
-void handleComment(const char *input, int *i, int *line, int *column, int isMultiLine);
-void handleOperator(const char *input, int *i, int *line, int *column);
-void handleString(const char *input, int *i, int *line, int *column);
-void handleNumber(const char *input, int *i, int *line, int *column);
-void handleIdentifier(const char *input, int *i, int *line, int *column, int *isClassContext);
-void handleSpecialSymbol(const char *input, int *i, int *line, int *column);
+int isKeyword(const wchar_t *word);
+int isBooleanLiteral(const wchar_t *word);
+Token createToken(TokenType type, const wchar_t *value);
+void tokenize(const wchar_t *input);
+void handleComment(const wchar_t *input, int *i, int isMultiLine);
+void handleOperator(const wchar_t *input, int *i);
+void handleSpecialSymbol(const wchar_t *input, int *i);
+void handleString(const wchar_t *input, int *i);
+void handleCharLiteral(const wchar_t *input, int *i);
+void handleNumber(const wchar_t *input, int *i);
+void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClassVariable, int *isFunction);
+wchar_t *getInput();  
+int isVariableDeclared(const wchar_t *word);
+int isFunctionDeclared(const wchar_t *word);
 
-// Function to check if a string is a keyword
-int isKeyword(const char *word) {
+// Check if a string is a keyword
+int isKeyword(const wchar_t *word){
     for (int i = 0; keywords[i] != NULL; i++) {
-        if (strcmp(word, keywords[i]) == 0) {
+        if (wcscmp(word, keywords[i]) == 0) {
             return 1;
         }
     }
     return 0;
 }
 
-// Function to check if a string is an operator
-int isOperator(const char *op) {
-    for (int i = 0; operators[i] != NULL; i++) {
-        if (strcmp(op, operators[i]) == 0) {
+// Check if a string is a boolean literal
+int isBooleanLiteral(const wchar_t *word) {
+    for (int i = 0; boolean_literals[i] != NULL; i++) {
+        if (wcscmp(word, boolean_literals[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+// Alpha Check
+int isSanskritAlpha(wchar_t c) {
+    // Check if the character belongs to the Devanagari script range
+    return (c >= L'\u0900' && c <= L'\u097F') ||  // Devanagari block
+           (c >= L'\uA8E0' && c <= L'\uA8FF');  // Extended Devanagari block
+}
+
+// Check if a function is declared
+int isFunctionDeclared(const wchar_t *word) {
+    for (int i = 0; i < function_count; i++) {
+        if (wcscmp(functions[i], word) == 0) {
             return 1;
         }
     }
     return 0;
 }
 
-// Function to check if a string is a special symbol
-int isSpecialSymbol(const char *symbol) {
-    for (int i = 0; special_symbols[i] != NULL; i++) {
-        if (strcmp(symbol, special_symbols[i]) == 0) {
+// Check if a variable is declared
+int isVariableDeclared(const wchar_t *word) {
+    for (int i = 0; i < variable_count; i++) {
+        if (wcscmp(variables[i], word) == 0) {
             return 1;
         }
     }
     return 0;
 }
 
-// Function to create a token
-Token createToken(TokenType type, const char *value, int line, int column) {
+// Create a token
+Token createToken(TokenType type, const wchar_t *value) {
     Token token;
     token.type = type;
-    strcpy(token.value, value);
-    token.line = line;
-    token.column = column;
+    wcsncpy(token.value, value, sizeof(token.value) / sizeof(wchar_t) - 1);
+    token.value[sizeof(token.value) / sizeof(wchar_t) - 1] = L'\0';  // Explicitly null-terminate
     return token;
 }
 
-// Function to tokenize the input
-void tokenize(const char *input) {
-    int i = 0;      // Current position in input
-    int line = 1;   // Current line number
-    int column = 1; // Current column number
-    int isClassContext = 0; // Context flag for handling classed variables
 
-    printf("Lexical Analysis:\n");
-    printf("=================\n");
+// Tokenize input
+void tokenize(const wchar_t *input) {
+    int i = 0;
+    long int line = 1, column = 1;
+    int isVariable = 0, isClassVariable = 0, isFunction = 0;
+    
+    printf("\nLexical Analysis:\n");
+        while (input[i] != L'\0') {
+        wchar_t c = input[i];
+        
+        if (c == '\n') {
+            line++;
+            column = 1;
+        } else {
+            column++;
+        }
 
-    while (input[i] != '\0') {
-        char c = input[i];
-
-        // Skip whitespace and track line/column
-        if (isspace(c)) {
-            if (c == '\n') {
-                line++;
-                column = 1;
-            } else {
-                column++;
-            }
+        if (iswspace(c)) {
             i++;
             continue;
         }
 
-        // Handle single-line comments
         if (c == '/' && input[i + 1] == '/') {
-            handleComment(input, &i, &line, &column, 0);
+            handleComment(input, &i, 0);
             continue;
         }
 
-        // Handle multi-line comments
         if (c == '/' && input[i + 1] == '*') {
-            handleComment(input, &i, &line, &column, 1);
+            handleComment(input, &i, 1);
             continue;
         }
 
-        // Handle special symbols
-        if (strchr("(){}[];,", c)) {
-            handleSpecialSymbol(input, &i, &line, &column);
+        if (wcschr(L"+-*/=><!&|?", c)) {
+            handleOperator(input, &i);
             continue;
         }
 
-        // Handle operators
-        if (strchr("=><!&|+-*/", c)) {
-            handleOperator(input, &i, &line, &column);
+        if (wcschr(L"(){}[],;:", c)) {
+            handleSpecialSymbol(input, &i);
             continue;
         }
 
-        // Handle numbers
-        if (isdigit(c)) {
-            handleNumber(input, &i, &line, &column);
+        if (iswdigit(c)) {
+            handleNumber(input, &i);
             continue;
         }
 
-        // Handle strings
-        if (c == '"') {
-            handleString(input, &i, &line, &column);
+        if (c == L'"') {
+            handleString(input, &i);
+            continue;
+        }
+        
+        if (c == L'\'') {
+            handleCharLiteral(input, &i);
+            continue;
+        }
+        
+        if (isSanskritAlpha(c) || (c & 0x80)) { // Unicode support
+            handleIdentifier(input, &i, &isVariable, &isClassVariable, &isFunction);
             continue;
         }
 
-        // Handle identifiers or keywords
-        if (isalpha(c) || (c & 0x80)) { // Unicode support for Sanskrit
-            handleIdentifier(input, &i, &line, &column, &isClassContext);
-            continue;
-        }
-
-        // Handle unknown characters
-        char unknown[2] = {c, '\0'};
-        Token token = createToken(TOKEN_UNKNOWN, unknown, line, column);
-        printf("Unknown: %s at Line: %d, Column: %d\n", token.value, token.line, token.column);
+        wchar_t unknown[2] = {c, '\0'};
+        Token token = createToken(TOKEN_UNKNOWN, unknown);
+        printf("Unknown: %ls\n", token.value);
         i++;
-        column++;
     }
 
-    // End of file token
-    Token eofToken = createToken(TOKEN_EOF, "EOF", line, column);
-    printf("End of Input: %s\n", eofToken.value);
+    Token eofToken = createToken(TOKEN_EOF, L"EOF");
+    printf("End of Input: %ls\n", eofToken.value);
+}
+// Handle CharLiteral
+void handleCharLiteral(const wchar_t *input, int *i) {
+    wchar_t buffer[2] = {input[*i], L'\0'};
+    Token token = createToken(TOKEN_wchar_t, buffer);
+    printf("Character Literal: '%ls'\n", token.value);
+    (*i)++;
 }
 
-// Function to handle comments
-void handleComment(const char *input, int *i, int *line, int *column, int isMultiLine) {
+// Handle comments
+void handleComment(const wchar_t *input, int *i, int isMultiLine) {
+    wchar_t buffer[1000];
     int bufferIndex = 0;
-    char buffer[1000];
-    *i += isMultiLine ? 2 : 2; // Skip // or /*
-    *column += 2;
-
+    int nestedCommentCount = 0;
+    *i += 2;
     while (1) {
-        char c = input[*i];
-        if (isMultiLine && c == '*' && input[*i + 1] == '/') {
-            *i += 2; // End of multi-line comment
-            *column += 2;
+        wchar_t c = input[*i];
+        if (bufferIndex >= 999) {  // Avoid buffer overflow
+            wprintf(L"Error: Comment too long!\n");
             break;
-        } else if (!isMultiLine && (c == '\n' || c == '\0')) {
-            break; // End of single-line comment
-        } else if (c == '\0') {
-            printf("Error: Unterminated comment at Line: %d\n", *line);
-            return;
         }
+        if (isMultiLine) {
+            
+            if (c == '/' && input[*i + 1] == '*') {
+                nestedCommentCount++; // Start of a new nested comment
+                *i += 2;
+                continue;
+            }
+            if (c == '\0') {
+                wprintf(L"Error: Unterminated multi-line comment!\n");
+                break;
+            }
+            else if (c == '*' && input[*i + 1] == '/') {
+                if (nestedCommentCount > 0) {
+                    nestedCommentCount--; // End of a nested comment
+                    *i += 2;
+                    continue;
+                } else {
+                    *i += 2;
+                    break;
+                }
+            }
+        }
+        // If single-line comment, just break at end of line or EOF
+        else if (c == '\n' || c == '\0') {
+            break;
+        }
+
         buffer[bufferIndex++] = input[(*i)++];
-        if (c == '\n') {
-            (*line)++;
-            *column = 1;
-        } else {
-            (*column)++;
-        }
     }
     buffer[bufferIndex] = '\0';
-    Token token = createToken(TOKEN_COMMENT, buffer, *line, *column);
+    Token token = createToken(TOKEN_COMMENT, buffer);
     printf("%s Comment: %s\n", isMultiLine ? "Multi-line" : "Single-line", token.value);
 }
 
-// Function to handle operators
-void handleOperator(const char *input, int *i, int *line, int *column) {
-    char operatorStr[3] = {input[*i], '\0', '\0'};
+// Handle operators
+void handleOperator(const wchar_t *input, int *i) {
+    wchar_t operatorStr[3] = {input[*i], '\0', '\0'};
     if (input[*i + 1] == '=' || input[*i + 1] == operatorStr[0]) {
         operatorStr[1] = input[++(*i)];
     }
-    Token token = createToken(TOKEN_OPERATOR, operatorStr, *line, *column);
-    printf("Operator: %s at Line: %d, Column: %d\n", token.value, token.line, token.column);
+    Token token = createToken(TOKEN_OPERATOR, operatorStr);
+    printf("Operator: %ls\n", token.value);
     (*i)++;
-    (*column)++;
 }
 
-// Function to handle strings
-void handleString(const char *input, int *i, int *line, int *column) {
-    char buffer[1000];
+// Handle special symbols
+void handleSpecialSymbol(const wchar_t *input, int *i) {
+    wchar_t symbol[2] = {input[*i], '\0'};
+    Token token = createToken(TOKEN_SPECIAL_SYMBOL, symbol);
+    printf("Special Symbol: %ls\n", token.value);
+    (*i)++;
+}
+
+// Handle strings
+void handleString(const wchar_t *input, int *i) {
+    wchar_t buffer[1000];
     int bufferIndex = 0;
-    (*i)++; // Skip opening quote
-    (*column)++;
-    while (input[*i] != '"' && input[*i] != '\0') {
-        if (input[*i] == '\\' && input[*i + 1] != '\0') { // Handle escape characters
+    (*i)++;
+
+    while (input[*i] != L'"' && input[*i] != L'\0') {
+        if (wcsncmp(&input[*i], L"\\नव", 6) == 0) {
+            buffer[bufferIndex++] = L'\n';
+            *i += 6;
+        } else {
             buffer[bufferIndex++] = input[(*i)++];
         }
-        buffer[bufferIndex++] = input[(*i)++];
-        (*column)++;
     }
-    if (input[*i] == '\0') {
-        printf("Error: Unterminated string at Line: %d, Column: %d\n", *line, *column);
+
+    if (input[*i] == L'\0') {
+        printf("Error: Unterminated string\n");
         return;
     }
-    (*i)++; // Skip closing quote
-    (*column)++;
-    buffer[bufferIndex] = '\0';
-    Token token = createToken(TOKEN_STRING, buffer, *line, *column);
-    printf("String: \"%s\" at Line: %d, Column: %d\n", token.value, token.line, token.column);
-}
 
-// Function to handle numbers
-void handleNumber(const char *input, int *i, int *line, int *column) {
-    char buffer[100];
-    int bufferIndex = 0;
-    while (isdigit(input[*i]) || input[*i] == '.') {
-        buffer[bufferIndex++] = input[(*i)++];
-        (*column)++;
-    }
-    buffer[bufferIndex] = '\0';
-    Token token = createToken(TOKEN_NUMBER, buffer, *line, *column);
-    printf("Number: %s at Line: %d, Column: %d\n", token.value, token.line, token.column);
-}
-
-// Function to handle identifiers or keywords
-void handleIdentifier(const char *input, int *i, int *line, int *column, int *isClassContext) {
-    char buffer[100];
-    int bufferIndex = 0;
-    while (isalpha(input[*i]) || (input[*i] & 0x80)) {
-        buffer[bufferIndex++] = input[(*i)++];
-        (*column)++;
-    }
-    buffer[bufferIndex] = '\0';
-
-    if (*isClassContext) {
-        Token token = createToken(TOKEN_CLASSED_VARIABLE, buffer, *line, *column);
-        printf("Classed Variable: %s at Line: %d, Column: %d\n", token.value, token.line, token.column);
-        *isClassContext = 0; // Reset class context
-    } else if (isKeyword(buffer)) {
-        Token token = createToken(TOKEN_KEYWORD, buffer, *line, *column);
-        printf("Keyword: %s at Line: %d, Column: %d\n", token.value, token.line, token.column);
-        if (strcmp(buffer, "कक्षा") == 0) {
-            *isClassContext = 1; // Set class context
-        }
-    } else {
-        Token token = createToken(TOKEN_VARIABLE, buffer, *line, *column);
-        printf("Variable: %s at Line: %d, Column: %d\n", token.value, token.line, token.column);
-    }
-}
-
-// Function to handle special symbols
-void handleSpecialSymbol(const char *input, int *i, int *line, int *column) {
-    char symbol[2] = {input[*i], '\0'};
-    Token token = createToken(TOKEN_SPECIAL_SYMBOL, symbol, *line, *column);
-    printf("Special Symbol: %s at Line: %d, Column: %d\n", token.value, token.line, token.column);
     (*i)++;
-    (*column)++;
+    buffer[bufferIndex] = L'\0';
+    Token token = createToken(TOKEN_STRING, buffer);
+    printf("String: \"%ls\"\n", token.value);
 }
 
-// Main function
-int main() {
-    setlocale(LC_CTYPE, ""); // Enable UTF-8 support
-    char program[1000] = ""; // Buffer for input program
-    char line[256];
+// Handle numbers
+void handleNumber(const wchar_t *input, int *i) {
+    wchar_t buffer[100];
+    int bufferIndex = 0;
+    while (iswdigit(input[*i]) || input[*i] == '.') {
+        buffer[bufferIndex++] = input[(*i)++];
+    }
+    buffer[bufferIndex] = '\0';
+    Token token = createToken(TOKEN_NUMBER, buffer);
+    printf("Number: %ls\n", token.value);
+}
 
-    printf("Enter your Sanskrit program (type '|' to stop):\n");
-    while (1) {
-        if (fgets(line, sizeof(line), stdin) == NULL) break;
-        if (strcmp(line, "|\n") == 0) break;
-        strcat(program, line);
+// Handle identifiers and variable classification
+void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClassVariable, int *isFunction) {
+    wchar_t buffer[100];
+    int bufferIndex = 0;
+
+    while (isSanskritAlpha(input[*i]) || iswdigit(input[*i]) || input[*i] == L'_') {
+        if (bufferIndex >= 99) {  // Prevent buffer overflow
+            wprintf(L"Error: Identifier too long!\n");
+            buffer[bufferIndex] = L'\0';
+            break;
+        }
+        buffer[bufferIndex++] = input[(*i)++];
+    }
+    buffer[bufferIndex] = L'\0';
+
+    // Check if it's a keyword
+    if (isKeyword(buffer)) {
+        Token token = createToken(TOKEN_KEYWORD, buffer);
+        printf("Keyword: %ls\n", token.value);
+
+        if (wcscmp(buffer, L"पूर्ण") == 0) {
+            *isVariable = 1;
+        } else if (wcscmp(buffer, L"कक्षा") == 0) {
+            *isClassVariable = 1;
+        }
+        return;
     }
 
-    tokenize(program);
+    // Check if it's a boolean literal
+    if (isBooleanLiteral(buffer)) {
+        Token token = createToken(TOKEN_BOOLEAN, buffer);
+        printf("Boolean: %ls\n", token.value);
+        return;
+    }
+
+    // Check if it’s a function declaration keyword
+    if (wcscmp(buffer, L"कर्म") == 0) {
+        *isFunction = 1;
+        return;
+    }
+
+    // If the previous token was "कर्म", mark this as a function
+    if (*isFunction) {
+        if (function_count >= 100) {
+            wprintf(L"Error: Too many functions declared!\n");
+            return;
+        }
+        wcscpy(functions[function_count++], buffer);
+        Token token = createToken(TOKEN_FUNCTION, buffer);
+        printf("Function: %ls\n", token.value);
+        *isFunction = 0;  // Reset function flag
+        return;
+    }
+
+    // Check if it's a previously declared variable
+    if (isVariableDeclared(buffer)) {
+        Token token = createToken(TOKEN_VARIABLE, buffer);
+        printf("Variable: %ls\n", token.value);
+        return;
+    }
+
+    // Check if it's a previously declared function
+    if (isFunctionDeclared(buffer)) {
+        Token token = createToken(TOKEN_FUNCTION, buffer);
+        printf("Function: %ls\n", token.value);
+        return;
+    }
+
+    // If it's a new variable declaration
+    if (*isVariable) {
+        if (variable_count >= 100) {
+            wprintf(L"Error: Too many variables!\n");
+            *isVariable = 0;
+            return;
+        }
+        wcscpy(variables[variable_count++], buffer);
+        Token token = createToken(TOKEN_VARIABLE, buffer);
+        printf("Variable: %ls\n", token.value);
+        *isVariable = 0;  // Reset variable flag
+        return;
+    }
+
+    // If it's a class variable
+    if (*isClassVariable) {
+        Token token = createToken(TOKEN_CLASSED_VARIABLE, buffer);
+        printf("Class Variable: %ls\n", token.value);
+        *isClassVariable = 0;  // Reset class variable flag
+        return;
+    }
+
+    // If nothing matched, treat it as an unknown identifier
+    Token token = createToken(TOKEN_UNKNOWN, buffer);
+    wprintf(L"Unknown: %ls\n", token.value);
+}
+
+// Read file into a wide character buffer
+
+wchar_t *readFile(const char *filename) {
+    FILE *file = fopen(filename, "r, ccs=UTF-8"); // Open in wide mode
+    if (!file) {
+        wprintf(L"Error: Unable to open file %s\n", filename);
+        return NULL;
+    }
+
+    // Move to the end to get the file size
+    fseek(file, 0, SEEK_END);
+    long length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    // Allocate wide character buffer
+    wchar_t *wbuffer = (wchar_t *)malloc((length + 1) * sizeof(wchar_t));
+    if (!wbuffer) {
+        wprintf(L"Memory allocation failed!\n");
+        fclose(file);
+        return NULL;
+    }
+
+    // Read file directly as wide characters
+    size_t index = 0;
+    wint_t ch;
+    while ((ch = fgetwc(file)) != WEOF) {
+        wbuffer[index++] = (wchar_t)ch;
+    }
+    wbuffer[index] = L'\0';
+
+    fclose(file);
+    return wbuffer;
+}
+// Main function
+int main(int argc, char *argv[]) {
+    setlocale(LC_CTYPE, "hi_IN.UTF-8");
+    if (argc < 2) {
+        wprintf(L"Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
+
+    wchar_t *program = readFile(argv[1]);
+    if (program) {
+        tokenize(program);
+        free(program);
+    } else {
+        wprintf(L"Error in reading file!\n");
+    }
     return 0;
 }
