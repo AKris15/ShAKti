@@ -35,6 +35,11 @@
 3. Enjoy a distraction-free and optimized coding environment.
 
 ---
+## Dependencies
+
+- [SDL2](https://github.com/libsdl-org/SDL/releases)  
+- [FreeType](https://download.savannah.gnu.org/releases/freetype/)
+
 
 ## 💻 Example Usage
 To open Namo and start coding:
@@ -59,7 +64,7 @@ Namo is **open-source** under the **GNU License**.
 ---
 
 ## 🌐 Community & Support
-📩 **Contact the Devs**: AK & Dishant at *[herogupta626@protonmail.com]*
+📩 **Contact the Devs**: AK & Dishant at *[herogupta626@protonmail.com]* or *[dishantsinghrathore786@gmail.com]*
 
 🚀 Join us in shaping the future of text editing with Namo!
 
