@@ -29,7 +29,7 @@ typedef struct {
 
 // Keywords in Sanskrit
 const char *keywords[] = {
-    "पूर्ण", "यदि", "अन्यथा", "चक्र", "से", "तक", "लेख", "प्रवे", "कक्ष", "वा यदि", "न", NULL
+    "पूर्ण", "यदि", "अन्यथा", "चक्र", "से", "तक", "लेख", "प्रवे", "कक्ष","वा यदि", "न", NULL
 };
 
 // Operators
@@ -43,10 +43,6 @@ const char *special_symbols[] = {
     "(", ")", "{", "}", "[", "]", ";", ",", ":"
 };
 
-// Variable tracking
-char variables[100][100];
-int variable_count = 0;
-
 // Function prototypes
 int isKeyword(const char *word);
 Token createToken(TokenType type, const char *value);
@@ -58,22 +54,11 @@ void handleString(const char *input, int *i);
 void handleNumber(const char *input, int *i);
 void handleIdentifier(const char *input, int *i, int *isVariable, int *isClassVariable);
 char *getInput();  
-int isVariableDeclared(const char *word);
 
 // Check if a string is a keyword
 int isKeyword(const char *word) {
     for (int i = 0; keywords[i] != NULL; i++) {
         if (strcmp(word, keywords[i]) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-// Check if a variable is declared
-int isVariableDeclared(const char *word) {
-    for (int i = 0; i < variable_count; i++) {
-        if (strcmp(variables[i], word) == 0) {
             return 1;
         }
     }
@@ -198,12 +183,7 @@ void handleString(const char *input, int *i) {
     (*i)++;
 
     while (input[*i] != '"' && input[*i] != '\0') {
-        if (strncmp(&input[*i], "\\नव", 6) == 0) {
-            buffer[bufferIndex++] = '\n';
-            *i += 6;
-        } else {
-            buffer[bufferIndex++] = input[(*i)++];
-        }
+        buffer[bufferIndex++] = input[(*i)++];
     }
 
     if (input[*i] == '\0') {
@@ -247,11 +227,7 @@ void handleIdentifier(const char *input, int *i, int *isVariable, int *isClassVa
         } else if (strcmp(buffer, "कक्षा") == 0) {
             *isClassVariable = 1;
         }
-    } else if (isVariableDeclared(buffer)) {
-        Token token = createToken(TOKEN_VARIABLE, buffer);
-        printf("Variable: %s\n", token.value);
     } else if (*isVariable) {
-        strcpy(variables[variable_count++], buffer);
         Token token = createToken(TOKEN_VARIABLE, buffer);
         printf("Variable: %s\n", token.value);
         *isVariable = 0;
@@ -264,7 +240,6 @@ void handleIdentifier(const char *input, int *i, int *isVariable, int *isClassVa
         printf("Unknown: %s\n", token.value);
     }
 }
-
 // Function to get input dynamically and optimize memory
 char *getInput() {
     size_t bufferSize = 256;
