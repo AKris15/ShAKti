@@ -43,6 +43,10 @@ const char *special_symbols[] = {
     "(", ")", "{", "}", "[", "]", ";", ",", ":"
 };
 
+// Variable tracking
+char variables[100][100];
+int variable_count = 0;
+
 // Function prototypes
 int isKeyword(const char *word);
 Token createToken(TokenType type, const char *value);
@@ -53,6 +57,7 @@ void handleSpecialSymbol(const char *input, int *i);
 void handleString(const char *input, int *i);
 void handleNumber(const char *input, int *i);
 void handleIdentifier(const char *input, int *i, int *isVariable, int *isClassVariable);
+char *getInput();  
 int isVariableDeclared(const char *word);
 
 // Check if a string is a keyword
@@ -74,10 +79,6 @@ int isVariableDeclared(const char *word) {
     }
     return 0;
 }
-
-// Variable tracking
-char variables[100][100];
-int variable_count = 0;
 
 // Create a token
 Token createToken(TokenType type, const char *value) {
@@ -131,7 +132,20 @@ void tokenize(const char *input) {
             handleString(input, &i);
             continue;
         }
+
+        if (isalpha(c) || (c & 0x80)) { // Unicode support
+            handleIdentifier(input, &i, &isVariable, &isClassVariable);
+            continue;
+        }
+
+        char unknown[2] = {c, '\0'};
+        Token token = createToken(TOKEN_UNKNOWN, unknown);
+        printf("Unknown: %s\n", token.value);
+        i++;
     }
+
+    Token eofToken = createToken(TOKEN_EOF, "EOF");
+    printf("End of Input: %s\n", eofToken.value);
 }
 
 // Handle comments
@@ -166,6 +180,14 @@ void handleOperator(const char *input, int *i) {
     }
     Token token = createToken(TOKEN_OPERATOR, operatorStr);
     printf("Operator: %s\n", token.value);
+    (*i)++;
+}
+
+// Handle special symbols
+void handleSpecialSymbol(const char *input, int *i) {
+    char symbol[2] = {input[*i], '\0'};
+    Token token = createToken(TOKEN_SPECIAL_SYMBOL, symbol);
+    printf("Special Symbol: %s\n", token.value);
     (*i)++;
 }
 
@@ -241,4 +263,61 @@ void handleIdentifier(const char *input, int *i, int *isVariable, int *isClassVa
         Token token = createToken(TOKEN_UNKNOWN, buffer);
         printf("Unknown: %s\n", token.value);
     }
+}
+
+// Function to get input dynamically and optimize memory
+char *getInput() {
+    size_t bufferSize = 256;
+    char *input = malloc(bufferSize);
+    if (!input) {
+        printf("Memory allocation failed!\n");
+        return NULL;
+    }
+
+    size_t len = 0;
+    printf("Enter your Sanskrit program (type '|' alone to stop):\n");
+
+    while (1) {
+        char buffer[256];
+        if (!fgets(buffer, sizeof(buffer), stdin)) {
+            break; // Stop reading if input fails
+        }
+
+        // Check if the input is just "|"
+        if (strcmp(buffer, "|\n") == 0) {
+            break;
+        }
+
+        size_t bufferLen = strlen(buffer);
+
+        // Ensure enough space in input buffer
+        char *newInput = realloc(input, len + bufferLen + 1);
+        if (!newInput) {
+            printf("Memory reallocation failed!\n");
+            free(input);
+            return NULL;
+        }
+        input = newInput;
+
+        // Copy buffer into input
+        strcpy(input + len, buffer);
+        len += bufferLen;
+    }
+
+    return input;
+}
+
+// Main function
+int main() {
+    setlocale(LC_CTYPE, "");
+    char *program = getInput();
+
+    if (program) {
+        tokenize(program);
+        free(program);
+    } else {
+        printf("Error in reading input!\n");
+    }
+
+    return 0;
 }
