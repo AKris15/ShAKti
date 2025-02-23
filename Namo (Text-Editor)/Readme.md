@@ -64,7 +64,7 @@ Namo is **open-source** under the **GNU License**.
 ---
 
 ## 🌐 Community & Support
-📩 **Contact the Devs**: AK & Dishant at *[herogupta626@protonmail.com]* or *[dishantsinghrathore786@gmail.com]*
+📩 **Contact the Devs**: AK & Dishant at *[herogupta626@protonmail.com]* and *[dishantsinghrathore786@gmail.com]*
 
 🚀 Join us in shaping the future of text editing with Namo!
 
