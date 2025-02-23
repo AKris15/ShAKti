@@ -168,3 +168,41 @@ void handleOperator(const char *input, int *i) {
     printf("Operator: %s\n", token.value);
     (*i)++;
 }
+
+// Handle strings
+void handleString(const char *input, int *i) {
+    char buffer[1000];
+    int bufferIndex = 0;
+    (*i)++;
+
+    while (input[*i] != '"' && input[*i] != '\0') {
+        if (strncmp(&input[*i], "\\नव", 6) == 0) {
+            buffer[bufferIndex++] = '\n';
+            *i += 6;
+        } else {
+            buffer[bufferIndex++] = input[(*i)++];
+        }
+    }
+
+    if (input[*i] == '\0') {
+        printf("Error: Unterminated string\n");
+        return;
+    }
+
+    (*i)++;
+    buffer[bufferIndex] = '\0';
+    Token token = createToken(TOKEN_STRING, buffer);
+    printf("String: \"%s\"\n", token.value);
+}
+
+// Handle numbers
+void handleNumber(const char *input, int *i) {
+    char buffer[100];
+    int bufferIndex = 0;
+    while (isdigit(input[*i]) || input[*i] == '.') {
+        buffer[bufferIndex++] = input[(*i)++];
+    }
+    buffer[bufferIndex] = '\0';
+    Token token = createToken(TOKEN_NUMBER, buffer);
+    printf("Number: %s\n", token.value);
+}
