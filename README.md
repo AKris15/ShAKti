@@ -116,7 +116,7 @@ ShAKti is **open-source** under the **GNU License**.
 
 ## 🌐 Community & Support
 
-- 📩 **Contact to the Devs**: Reach out to AK & Dishant at *[herogupta626@protonmail.com]*
+- 📩 **Contact to the Devs**: Reach out to AK & Dishant at *[herogupta626@protonmail.com]* *[dishantsinghrathore786@gmail.com]*
 
 Let’s redefine programming together with **ShAKti**! 🚀
 
