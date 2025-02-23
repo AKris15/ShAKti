@@ -69,9 +69,9 @@ void handleComment(const wchar_t *input, int *i, int isMultiLine);
 void handleOperator(const wchar_t *input, int *i);
 void handleSpecialSymbol(const wchar_t *input, int *i);
 void handleString(const wchar_t *input, int *i);
-void handlewchar_tLiteral(const wchar_t *input, int *i);
+void handleCharLiteral(const wchar_t *input, int *i);
 void handleNumber(const wchar_t *input, int *i);
-void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isFunction);
+void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClassVariable, int *isFunction);
 wchar_t *getInput();  
 int isVariableDeclared(const wchar_t *word);
 int isFunctionDeclared(const wchar_t *word);
@@ -94,6 +94,12 @@ int isBooleanLiteral(const wchar_t *word) {
         }
     }
     return 0;
+}
+// Alpha Check
+int isSanskritAlpha(wchar_t c) {
+    // Check if the character belongs to the Devanagari script range
+    return (c >= L'\u0900' && c <= L'\u097F') ||  // Devanagari block
+           (c >= L'\uA8E0' && c <= L'\uA8FF');   // Extended Devanagari block
 }
 
 // Check if a function is declared
@@ -142,7 +148,7 @@ void tokenize(const wchar_t *input) {
             column++;
         }
 
-        if (isspace(c)) {
+        if (iswspace(c)) {
             i++;
             continue;
         }
@@ -157,17 +163,17 @@ void tokenize(const wchar_t *input) {
             continue;
         }
 
-        if (wcschr("+-*/=><!&|?", c)) {
+        if (wcschr(L"+-*/=><!&|?", c)) {
             handleOperator(input, &i);
             continue;
         }
 
-        if (wcschr("(){}[],;:", c)) {
+        if (wcschr(L"(){}[],;:", c)) {
             handleSpecialSymbol(input, &i);
             continue;
         }
 
-        if (isdigit(c)) {
+        if (iswdigit(c)) {
             handleNumber(input, &i);
             continue;
         }
@@ -182,8 +188,8 @@ void tokenize(const wchar_t *input) {
             continue;
         }
         
-        if (iswalpha(c) || (c & 0x80)) { // Unicode support
-            handleIdentifier(input, &i, &isVariable, &isClassVariable);
+        if (isSanskritAlpha(c) || (c & 0x80)) { // Unicode support
+            handleIdentifier(input, &i, &isVariable, &isClassVariable, &isFunction);
             continue;
         }
 
@@ -289,7 +295,7 @@ void handleString(const wchar_t *input, int *i) {
 void handleNumber(const wchar_t *input, int *i) {
     wchar_t buffer[100];
     int bufferIndex = 0;
-    while (isdigit(input[*i]) || input[*i] == '.') {
+    while (iswdigit(input[*i]) || input[*i] == '.') {
         buffer[bufferIndex++] = input[(*i)++];
     }
     buffer[bufferIndex] = '\0';
@@ -297,19 +303,11 @@ void handleNumber(const wchar_t *input, int *i) {
     printf("Number: %s\n", token.value);
 }
 
-// Handle character literals
-void handleCharLiteral(const wchar_t *input, int *i) {
-    wchar_t buffer[2] = {input[*i], L'\0'};
-    Token token = createToken(TOKEN_wchar_t, buffer);
-    printf("Character Literal: '%s'\n", token.value);
-    (*i)++;
-}
-
 // Handle identifiers and variable classification
-void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClassVariable) {
+void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClassVariable, int *isFunction) {
     wchar_t buffer[100];
     int bufferIndex = 0;
-    while (iswalpha(input[*i]) || (input[*i] & 0x80)) {
+    while (isSanskritAlpha(input[*i]) || (input[*i] & 0x80)) {
         buffer[bufferIndex++] = input[(*i)++];
     }
     buffer[bufferIndex] = '\0';
