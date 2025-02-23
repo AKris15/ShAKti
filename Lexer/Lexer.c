@@ -365,7 +365,7 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
         *isClassVariable = 0;
     } else {
         Token token = createToken(TOKEN_UNKNOWN, buffer);
-        printf("Unknown: %s\n", token.value);
+        wprintf(L"Unknown: %ls\n", token.value);
     }
 }
 
