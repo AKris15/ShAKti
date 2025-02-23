@@ -206,3 +206,39 @@ void handleNumber(const char *input, int *i) {
     Token token = createToken(TOKEN_NUMBER, buffer);
     printf("Number: %s\n", token.value);
 }
+
+// Handle identifiers and variable classification
+void handleIdentifier(const char *input, int *i, int *isVariable, int *isClassVariable) {
+    char buffer[100];
+    int bufferIndex = 0;
+    while (isalpha(input[*i]) || (input[*i] & 0x80)) {
+        buffer[bufferIndex++] = input[(*i)++];
+    }
+    buffer[bufferIndex] = '\0';
+
+    if (isKeyword(buffer)) {
+        Token token = createToken(TOKEN_KEYWORD, buffer);
+        printf("Keyword: %s\n", token.value);
+
+        if (strcmp(buffer, "पूर्ण") == 0) {
+            *isVariable = 1;
+        } else if (strcmp(buffer, "कक्षा") == 0) {
+            *isClassVariable = 1;
+        }
+    } else if (isVariableDeclared(buffer)) {
+        Token token = createToken(TOKEN_VARIABLE, buffer);
+        printf("Variable: %s\n", token.value);
+    } else if (*isVariable) {
+        strcpy(variables[variable_count++], buffer);
+        Token token = createToken(TOKEN_VARIABLE, buffer);
+        printf("Variable: %s\n", token.value);
+        *isVariable = 0;
+    } else if (*isClassVariable) {
+        Token token = createToken(TOKEN_CLASSED_VARIABLE, buffer);
+        printf("Class Variable: %s\n", token.value);
+        *isClassVariable = 0;
+    } else {
+        Token token = createToken(TOKEN_UNKNOWN, buffer);
+        printf("Unknown: %s\n", token.value);
+    }
+}
