@@ -16,8 +16,7 @@ ShAKti is more than just a language—it’s a new way to think about programmin
 
 - 🧠 **Inspired by Sanskrit** – Uses structured yet expressive syntax inspired by one of the oldest languages.
 - ⚡ **High Performance** – Built with C, ensuring speed and efficiency.
-- ✍️ **Custom Lexer, Parser, and Editor** – Developed from scratch for a unique coding experience.
-- 🖥️ **Unique Text Editor (Namo)** – Provides a fresh and intuitive coding environment, offering a seamless and efficient user experience.
+- 🖥️ **Unique Text Editor (Namo)** – Provides a fresh and intuitive coding environment, offering a seamless and efficient user experience built from Scratch in C.
 - 🌍 **Open Source** – Contributing to the free and open-source community.
 - 🎯 **Designed for Clarity** – Code that is readable, elegant, and easy to maintain.
 - 📢 **Spreading Awareness of Ancient Indian Languages** – Showcasing the richness of Sanskrit in the modern world.
@@ -28,7 +27,6 @@ ShAKti is more than just a language—it’s a new way to think about programmin
 ## 🔧 Features
 
 ✅ **Sanskrit-like Syntax** – A fresh approach to writing code with clarity.<br>
-✅ **Custom Lexer & Parser** – Ensuring robust and efficient code parsing.<br>
 ✅ **Integrated Text Editor (Namo)** – A dedicated environment for writing and executing ShAKti code, built from scratch in C.<br>
 ✅ **Strong Type System** – Encouraging disciplined and structured programming.<br>
 ✅ **Memory Efficient** – Optimized for minimal resource usage.<br>
@@ -110,7 +108,7 @@ We welcome contributions! To get started:
 ---
 
 ## 📜 License
-ShAKti is **open-source** under the **GNU License**.
+ShAKti is **open-source** under the **GPLv2 License**.
 
 ---
 
