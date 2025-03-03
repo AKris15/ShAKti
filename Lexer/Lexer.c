@@ -266,8 +266,16 @@ void handleOperator(const wchar_t *input, int *i) {
 // Handle special symbols
 void handleSpecialSymbol(const wchar_t *input, int *i) {
     wchar_t symbol[2] = {input[*i], L'\0'};
-    Token token = createToken(TOKEN_SPECIAL_SYMBOL, symbol);
-    printf("Special Symbol: %ls\n", token.value);
+    Token token;
+
+    if (wcscmp(symbol, L"|") == 0) {
+        token = createToken(TOKEN_EOL, symbol);
+        printf("End of Line: %ls\n", token.value);
+    } else {
+        token = createToken(TOKEN_SPECIAL_SYMBOL, symbol);
+        printf("Special Symbol: %ls\n", token.value);
+    }
+
     (*i)++;
 }
 
