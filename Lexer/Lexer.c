@@ -51,7 +51,7 @@ const wchar_t *operators[] = {
 
 // Special symbols
 const wchar_t *special_symbols[] = {
-    L"(", L")", L"{", L"}", L"[", L"]", L";", L",", L":",L"|"
+    L"(", L")", L"{", L"}", L"[", L"]", L";", L",", L":", L"|", NULL
 };
 
 // Variable and function tracking
@@ -167,7 +167,7 @@ void tokenize(const wchar_t *input) {
             continue;
         }
 
-        if (wcschr(L"(){}[],;:", c)) {
+        if (wcschr(L"(){}[],;:|", c)) {
             handleSpecialSymbol(input, &i);
             continue;
         }
