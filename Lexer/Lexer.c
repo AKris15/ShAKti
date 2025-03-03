@@ -20,6 +20,7 @@ typedef enum {
     TOKEN_SPECIAL_SYMBOL,
     TOKEN_BOOLEAN,
     TOKEN_EOF,
+    TOKEN_EOL,
     TOKEN_UNKNOWN
 } TokenType;
 
@@ -50,7 +51,7 @@ const wchar_t *operators[] = {
 
 // Special symbols
 const wchar_t *special_symbols[] = {
-    L"(", L")", L"{", L"}", L"[", L"]", L";", L",", L":"
+    L"(", L")", L"{", L"}", L"[", L"]", L";", L",", L":",L"|"
 };
 
 // Variable and function tracking
