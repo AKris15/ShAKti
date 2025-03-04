@@ -10,6 +10,8 @@ wchar_t variables[100][100];
 int variable_count = 0;
 wchar_t functions[100][100];
 int function_count = 0;
+wchar_t class_variables[100][100];
+int class_variable_count = 0;
 
 // Function prototypes
 void handleComment(const wchar_t *input, int *i, int isMultiLine);
@@ -21,6 +23,7 @@ void handleNumber(const wchar_t *input, int *i);
 void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClassVariable, int *isFunction);
 int isVariableDeclared(const wchar_t *word);
 int isFunctionDeclared(const wchar_t *word);
+int isClassVariableDeclared(const wchar_t *word);
 
 // Check if a function is declared
 int isFunctionDeclared(const wchar_t *word) {
@@ -42,12 +45,22 @@ int isVariableDeclared(const wchar_t *word) {
     return 0;
 }
 
+// Check if a class variable is declared
+int isClassVariableDeclared(const wchar_t *word) {
+    for (int i = 0; i < class_variable_count; i++) {
+        if (wcscmp(class_variables[i], word) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 // Tokenize input
 void tokenize(const wchar_t *input) {
     int i = 0;
     long int line = 1, column = 1;
     int isVariable = 0, isClassVariable = 0, isFunction = 0;
-
+    
     printf("\nLexical Analysis:\n");
     while (input[i] != L'\0') {
         wchar_t c = input[i];
@@ -253,6 +266,8 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
             *isVariable = 1;
         } else if (wcscmp(buffer, L"कक्षा") == 0) {
             *isClassVariable = 1;
+        } else if (wcscmp(buffer, L"कर्म") == 0) {
+            *isFunction = 1;
         }
         return;
     }
@@ -264,13 +279,28 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
         return;
     }
 
-    // Check if it’s a function declaration keyword
-    if (wcscmp(buffer, L"कर्म") == 0) {
-        *isFunction = 1;
+    // Check if it's a previously declared variable
+    if (isVariableDeclared(buffer)) {
+        Token token = createToken(TOKEN_VARIABLE, buffer);
+        printf("Variable: %ls\n", token.value);
         return;
     }
 
-    // If the previous token was "कर्म", mark this as a function
+    // Check if it's a previously declared class variable
+    if (isClassVariableDeclared(buffer)) {
+        Token token = createToken(TOKEN_CLASSED_VARIABLE, buffer);
+        printf("Class Variable: %ls\n", token.value);
+        return;
+    }
+
+    // Check if it's a previously declared function
+    if (isFunctionDeclared(buffer)) {
+        Token token = createToken(TOKEN_FUNCTION, buffer);
+        printf("Function: %ls\n", token.value);
+        return;
+    }
+
+    // Handle function name after कर्म keyword
     if (*isFunction) {
         if (function_count >= 100) {
             wprintf(L"Error: Too many functions declared!\n");
@@ -283,17 +313,16 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
         return;
     }
 
-    // Check if it's a previously declared variable
-    if (isVariableDeclared(buffer)) {
-        Token token = createToken(TOKEN_VARIABLE, buffer);
-        printf("Variable: %ls\n", token.value);
-        return;
-    }
-
-    // Check if it's a previously declared function
-    if (isFunctionDeclared(buffer)) {
-        Token token = createToken(TOKEN_FUNCTION, buffer);
-        printf("Function: %ls\n", token.value);
+    // Handle class variable name after कक्षा keyword
+    if (*isClassVariable) {
+        if (class_variable_count >= 100) {
+            wprintf(L"Error: Too many class variables declared!\n");
+            return;
+        }
+        wcscpy(class_variables[class_variable_count++], buffer);
+        Token token = createToken(TOKEN_CLASSED_VARIABLE, buffer);
+        printf("Class Variable: %ls\n", token.value);
+        *isClassVariable = 0;
         return;
     }
 
@@ -308,14 +337,6 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
         Token token = createToken(TOKEN_VARIABLE, buffer);
         printf("Variable: %ls\n", token.value);
         *isVariable = 0;
-        return;
-    }
-
-    // If it's a class variable
-    if (*isClassVariable) {
-        Token token = createToken(TOKEN_CLASSED_VARIABLE, buffer);
-        printf("Class Variable: %ls\n", token.value);
-        *isClassVariable = 0;
         return;
     }
 
