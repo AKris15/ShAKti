@@ -1,58 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "Lexer.h"
+#include "Tokens.h"
+#include "utils.h"
 #include <wctype.h>
 #include <string.h>
-#include <wchar.h>
-#include <locale.h>
-
-// Token types
-typedef enum {
-    TOKEN_KEYWORD,
-    TOKEN_IDENTIFIER,
-    TOKEN_VARIABLE,
-    TOKEN_CLASSED_VARIABLE,
-    TOKEN_FUNCTION,
-    TOKEN_NUMBER,
-    TOKEN_OPERATOR,
-    TOKEN_STRING,
-    TOKEN_wchar_t,
-    TOKEN_COMMENT,
-    TOKEN_SPECIAL_SYMBOL,
-    TOKEN_BOOLEAN,
-    TOKEN_EOF,
-    TOKEN_EOL,
-    TOKEN_UNKNOWN
-} TokenType;
-
-// Token structure
-typedef struct {
-    TokenType type;
-    wchar_t value[100];
-} Token;
-
-// Keywords in Sanskrit
-const wchar_t *keywords[] = {
-    L"पूर्ण", L"यदि", L"अन्यथा", 
-    L"चक्र", L"से", L"तक", L"लेख", 
-    L"प्रवे", L"कक्ष", L"वा यदि", 
-    L"न", L"कर्म" , NULL
-};
-
-// Boolean literals
-const wchar_t *boolean_literals[] = {
-    L"सत्य", L"असत्य", NULL
-};
-
-// Operators
-const wchar_t *operators[] = {
-    L"+", L"-", L"*", L"/", L"=", L">", L"<", L">=", L"<=", L"==", L"!=", L"&&", L"||", L"!",
-    L"?", L"+=", L"-=", L"*=", L"/="
-};
-
-// Special symbols
-const wchar_t *special_symbols[] = {
-    L"(", L")", L"{", L"}", L"[", L"]", L";", L",", L":", L"|", NULL
-};
 
 // Variable and function tracking
 wchar_t variables[100][100];
@@ -61,10 +11,6 @@ wchar_t functions[100][100];
 int function_count = 0;
 
 // Function prototypes
-int isKeyword(const wchar_t *word);
-int isBooleanLiteral(const wchar_t *word);
-Token createToken(TokenType type, const wchar_t *value);
-void tokenize(const wchar_t *input);
 void handleComment(const wchar_t *input, int *i, int isMultiLine);
 void handleOperator(const wchar_t *input, int *i);
 void handleSpecialSymbol(const wchar_t *input, int *i);
@@ -72,34 +18,8 @@ void handleString(const wchar_t *input, int *i);
 void handleCharLiteral(const wchar_t *input, int *i);
 void handleNumber(const wchar_t *input, int *i);
 void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClassVariable, int *isFunction);
-wchar_t *readFile(const char *filename);
 int isVariableDeclared(const wchar_t *word);
 int isFunctionDeclared(const wchar_t *word);
-
-// Check if a string is a keyword
-int isKeyword(const wchar_t *word) {
-    for (int i = 0; keywords[i] != NULL; i++) {
-        if (wcscmp(word, keywords[i]) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-// Check if a string is a boolean literal
-int isBooleanLiteral(const wchar_t *word) {
-    for (int i = 0; boolean_literals[i] != NULL; i++) {
-        if (wcscmp(word, boolean_literals[i]) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-// Check if a character is a Sanskrit alphabet
-int isSanskritAlpha(wchar_t c) {
-    return (c >= L'\u0900' && c <= L'\u097F') || (c >= L'\uA8E0' && c <= L'\uA8FF');
-}
 
 // Check if a function is declared
 int isFunctionDeclared(const wchar_t *word) {
@@ -119,15 +39,6 @@ int isVariableDeclared(const wchar_t *word) {
         }
     }
     return 0;
-}
-
-// Create a token
-Token createToken(TokenType type, const wchar_t *value) {
-    Token token;
-    token.type = type;
-    wcsncpy(token.value, value, sizeof(token.value) / sizeof(wchar_t) - 1);
-    token.value[sizeof(token.value) / sizeof(wchar_t) - 1] = L'\0';
-    return token;
 }
 
 // Tokenize input
@@ -410,52 +321,4 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
     // If nothing matched, treat it as an unknown identifier
     Token token = createToken(TOKEN_UNKNOWN, buffer);
     wprintf(L"Unknown: %ls\n", token.value);
-}
-
-// Read file into a wide character buffer
-wchar_t *readFile(const char *filename) {
-    FILE *file = fopen(filename, "r, ccs=UTF-8");
-    if (!file) {
-        wprintf(L"Error: Unable to open file %s\n", filename);
-        return NULL;
-    }
-
-    fseek(file, 0, SEEK_END);
-    long length = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    wchar_t *buffer = (wchar_t *)malloc((length + 1) * sizeof(wchar_t));
-    if (!buffer) {
-        wprintf(L"Memory allocation failed!\n");
-        fclose(file);
-        return NULL;
-    }
-
-    size_t index = 0;
-    wint_t ch;
-    while ((ch = fgetwc(file)) != WEOF) {
-        buffer[index++] = (wchar_t)ch;
-    }
-    buffer[index] = L'\0';
-
-    fclose(file);
-    return buffer;
-}
-
-// Main function
-int main(int argc, char *argv[]) {
-    setlocale(LC_CTYPE, "hi_IN.UTF-8");
-    if (argc < 2) {
-        wprintf(L"Usage: %s <filename>\n", argv[0]);
-        return 1;
-    }
-
-    wchar_t *program = readFile(argv[1]);
-    if (program) {
-        tokenize(program);
-        free(program);
-    } else {
-        wprintf(L"Error in reading file!\n");
-    }
-    return 0;
 }
