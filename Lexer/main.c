@@ -25,9 +25,6 @@ int main(int argc, char *argv[]) {
 
     wchar_t *program = readFile(argv[1]);
     if (program) {
-        for (int i = 0; i < 10 && program[i] != L'\0'; i++) {
-            printf("%lc", program[i]);
-        }
         printf("\n");
         
         tokenize(program);
