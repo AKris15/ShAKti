@@ -13,6 +13,17 @@ const wchar_t *boolean_literals[] = {
     L"सत्य", L"असत्य", NULL
 };
 
+// Operators
+const wchar_t *operators[] = {
+    L"+", L"-", L"*", L"/", L"=", L">", L"<", L">=", L"<=", L"==", L"!=", L"&&", L"||", L"!",
+    L"?", L"+=", L"-=", L"*=", L"/="
+};
+
+// Special symbols
+const wchar_t *special_symbols[] = {
+    L"(", L")", L"{", L"}", L"[", L"]", L";", L",", L":", L"|", NULL
+};
+
 // Check if a string is a keyword
 int isKeyword(const wchar_t *word) {
     for (int i = 0; keywords[i] != NULL; i++) {
