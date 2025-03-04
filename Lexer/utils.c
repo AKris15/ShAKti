@@ -15,13 +15,13 @@ const wchar_t *boolean_literals[] = {
 
 // Operators
 const wchar_t *operators[] = {
-    L"+", L"-", L"*", L"/", L"=", L">", L"<", L">=", L"<=", L"==", L"!=", L"&&", L"||", L"!",
+    L"+", L"-", L"*", L"/", L"=", L">", L"<", L">=", L"<=", L"==", L"!=", L"&&", L";", L"!",
     L"?", L"+=", L"-=", L"*=", L"/="
 };
 
 // Special symbols
 const wchar_t *special_symbols[] = {
-    L"(", L")", L"{", L"}", L"[", L"]", L";", L",", L":", L"|", NULL
+    L"(", L")", L"{", L"}", L"[", L"]", L",", L":", L"|", NULL
 };
 
 // Check if a string is a keyword

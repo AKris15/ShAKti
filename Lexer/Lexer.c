@@ -74,12 +74,12 @@ void tokenize(const wchar_t *input) {
             continue;
         }
 
-        if (wcschr(L"+-*/=><!&|?", c)) {
+        if (wcschr(L"+-*/=><!&;?", c)) {
             handleOperator(input, &i);
             continue;
         }
 
-        if (wcschr(L"(){}[],;:|", c)) {
+        if (wcschr(L"(){}[],:|", c)) {
             handleSpecialSymbol(input, &i);
             continue;
         }
