@@ -2,6 +2,7 @@
 #include "Tokens.h"
 #include "utils.h"
 #include <wctype.h>
+#include <stdio.h>
 #include <string.h>
 
 // Variable and function tracking
