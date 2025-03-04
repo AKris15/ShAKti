@@ -154,11 +154,30 @@ void editor_insert_text_before_cursor(Editor *editor, const char *text)
     line_insert_text_before(&editor->lines[editor->cursor_row], text, &editor->cursor_col);
 }
 
-void editor_backspace(Editor *editor)
-{
-  editor_create_first_new_line(editor);
+void editor_backspace(Editor *editor) {
+    editor_create_first_new_line(editor);
 
-  line_backspace(&editor->lines[editor->cursor_row], &editor->cursor_col);
+    if (editor->cursor_col > 0) {
+        
+        line_backspace(&editor->lines[editor->cursor_row], &editor->cursor_col);
+    } else if (editor->cursor_row > 0) {
+        
+        Line *prev_line = &editor->lines[editor->cursor_row - 1];
+        Line *curr_line = &editor->lines[editor->cursor_row];
+
+        // Move the cursor to the end of the previous line
+        editor->cursor_col = prev_line->size;
+        editor->cursor_row--;
+
+
+        line_append_text_sized(prev_line, curr_line->chars, curr_line->size);
+
+        
+        memmove(&editor->lines[editor->cursor_row + 1],
+                &editor->lines[editor->cursor_row + 2],
+                (editor->size - editor->cursor_row - 2) * sizeof(Line));
+        editor->size--;
+    }
 }
 
 void editor_delete(Editor *editor)
