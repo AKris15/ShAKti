@@ -97,8 +97,15 @@ void tokenize(const wchar_t *input) {
             continue;
         }
 
-        if (iswdigit(c)) {
-            handleNumber(input, &i);
+        // Check for underscore at the beginning of an identifier
+        if (c == L'_') {
+            handleIdentifier(input, &i, &isVariable, &isClassVariable, &isFunction);
+            continue;
+        }
+
+        // Check for digits & Devanagari digits
+        if (iswdigit(c) || isDevanagariDigit(c)) {
+            handleNumber(input, &i );
             continue;
         }
 
@@ -117,6 +124,7 @@ void tokenize(const wchar_t *input) {
             continue;
         }
 
+        // Handle unknown characters
         wchar_t unknown[2] = {c, L'\0'};
         Token token = createToken(TOKEN_UNKNOWN, unknown);
         printf("Unknown: %ls\n", token.value);
@@ -230,24 +238,55 @@ void handleString(const wchar_t *input, int *i) {
     printf("String: \"%ls\"\n", token.value);
 }
 
-// Handle numbers
+// the handleNumber function to recognize Devanagari digits
 void handleNumber(const wchar_t *input, int *i) {
     wchar_t buffer[100];
     int bufferIndex = 0;
-    while (iswdigit(input[*i])) {
+    int isIdentifier = 0;
+    int hasDigits = 0;
+    
+    // First, collect all digits (including Devanagari digits)
+    while (iswdigit(input[*i]) || isDevanagariDigit(input[*i])) {
         buffer[bufferIndex++] = input[(*i)++];
+        hasDigits = 1;
     }
+    
+    // Check if the next character indicates this is actually an identifier
+    if (isSanskritAlpha(input[*i]) || input[*i] == L'_' || (input[*i] & 0x80)) {
+        isIdentifier = 1;
+        
+        // Continue collecting the rest of the identifier
+        while (isSanskritAlpha(input[*i]) || iswdigit(input[*i]) || 
+               isDevanagariDigit(input[*i]) || input[*i] == L'_' || (input[*i] & 0x80)) {
+            if (bufferIndex >= 99) {
+                wprintf(L"Error: Identifier too long!\n");
+                break;
+            }
+            buffer[bufferIndex++] = input[(*i)++];
+        }
+    }
+    
     buffer[bufferIndex] = L'\0';
-    Token token = createToken(TOKEN_NUMBER, buffer);
-    printf("Number: %ls\n", token.value);
+    
+    if (isIdentifier) {
+        // Treat as an unknown identifier
+        Token token = createToken(TOKEN_UNKNOWN, buffer);
+        printf("Unknown: %ls\n", token.value);
+    } else if (hasDigits) {
+        // It's a pure number
+        Token token = createToken(TOKEN_NUMBER, buffer);
+        printf("Number: %ls\n", token.value);
+    }
 }
 
-// Handle identifiers and variable classification
+// the handleIdentifier function to better handle mixed identifiers
 void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClassVariable, int *isFunction) {
     wchar_t buffer[100];
     int bufferIndex = 0;
 
-    while (isSanskritAlpha(input[*i]) || iswdigit(input[*i]) || input[*i] == L'_') {
+    // Handle identifiers that can include Sanskrit characters, digits, Devanagari digits, and underscores
+    while (isSanskritAlpha(input[*i]) || iswdigit(input[*i]) || 
+           isDevanagariDigit(input[*i]) || input[*i] == L'_' || (input[*i] & 0x80)) {
         if (bufferIndex >= 99) {
             wprintf(L"Error: Identifier too long!\n");
             buffer[bufferIndex] = L'\0';
@@ -342,5 +381,5 @@ void handleIdentifier(const wchar_t *input, int *i, int *isVariable, int *isClas
 
     // If nothing matched, treat it as an unknown identifier
     Token token = createToken(TOKEN_UNKNOWN, buffer);
-    wprintf(L"Unknown: %ls\n", token.value);
+    printf("Unknown: %ls\n", token.value);
 }
