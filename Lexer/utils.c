@@ -48,3 +48,8 @@ int isBooleanLiteral(const wchar_t *word) {
 int isSanskritAlpha(wchar_t c) {
     return (c >= L'\u0900' && c <= L'\u097F') || (c >= L'\uA8E0' && c <= L'\uA8FF');
 }
+
+// to check if a character is a Devanagari digit
+int isDevanagariDigit(wchar_t c) {
+    return (c >= L'\u0966' && c <= L'\u096F'); // ० to ९
+}
