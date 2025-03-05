@@ -1,31 +1,95 @@
-पूर्ण संख्या = 10|
-पूर्ण अन्य_संख्या = 20|
+# Test Cases for Sanskrit-based Programming Language Lexer
 
-/* बहु-पंक्ति टिप्पणी शुरू
-यह उदाहरण कोड है।
-बहु-पंक्ति टिप्पणी समाप्त */
+This file contains test cases to verify all token types and lexer functionality.
 
-यदि (संख्या > अन्य_संख्या) {
-    लेख("संख्या बड़ी है।")|
-} अन्यथा {
-    लेख("अन्य_संख्या बड़ी है।")|
+## 1. Keywords
+पूर्ण variable1
+यदि condition
+अन्यथा action
+चक्र loop
+से start
+तक end
+लेख print
+प्रवे enter
+कक्षा classVar
+वा यदि elseif
+न not
+कर्म function1
+
+## 2. Identifiers
+normalIdentifier
+_underscoreIdentifier
+mixed123Identifier
+संस्कृतIdentifier
+_123MixedIdentifier
+
+## 3. Variables
+पूर्ण var1
+पूर्ण संस्कृतVar
+पूर्ण _underscoreVar
+var1 = 10
+
+## 4. Class Variables
+कक्षा classVar1
+कक्षा संस्कृतClassVar
+classVar1.property
+
+## 5. Functions
+कर्म func1
+कर्म संस्कृतFunc
+func1()
+संस्कृतFunc(arg1, arg2)
+
+## 6. Numbers
+123
+०१२३४५६७८९
+123abc  // Should be treated as unknown
+
+## 7. Operators
++ - * / = > < >= <= == != && ; ! ? += -= *= /=
+a + b
+c == d
+x += 5
+
+## 8. Strings
+"This is a string"
+"String with escape sequence \नव"
+"String with Sanskrit characters संस्कृत"
+
+## 9. Character Literals
+'a'
+'1'
+'स'
+
+## 10. Comments
+// This is a single-line comment
+/* This is a 
+   multi-line comment */
+/* Nested /* comment */ test */
+
+## 11. Special Symbols
+( ) { } [ ] , : |
+
+## 12. Boolean Literals
+सत्य
+असत्य
+
+## 13. Mixed Cases
+पूर्ण x = 10;
+यदि (x > 5) {
+    लेख("x is greater than 5");
+}
+कर्म calculateSum(a, b) {
+    पूर्ण result = a + b;
+    return result;
 }
 
-// एक-पंक्ति टिप्पणी: गणना करें
-पूर्ण योग = संख्या + अन्य_संख्या|
-कर्म गणना(पूर्ण प) {
-    लेख("गणना: ", प)|
-}
-
-पूर्ण कक्षा_सदस्य = 30|
-पूर्ण सत्य_मान = सत्य|
-पूर्ण झूठा_मान = असत्य|
-
-// वर्ण चर और स्ट्रिंग
-पूर्ण वर्ण = 'अ'|
-पूर्ण नाम = "नमस्ते"|
-
-// लूप
-चक्र (पूर्ण अ से 0 तक 5) {
-    लेख("अ का मान: ", अ)|
-}
+## 14. Edge Cases
+// Empty string
+""
+// Very long identifier
+veryLongIdentifierThatShouldBeTruncatedIfItExceedsTheMaximumAllowedLength
+// Unterminated string
+// "Unterminated string
+// Unterminated comment
+// /* Unterminated comment
