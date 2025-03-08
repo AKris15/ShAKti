@@ -38,102 +38,138 @@ The **ShAKti Lexer** is a fundamental component of the ShAKti programming langua
 ```
 The lexer breaks this into tokens:  
 ```
-[पूर्ण] [संख्या] [=] [10] [|]
-[यदि] [(] [संख्या] [>] [5] [)] [{]
-[लेख] [(] ["संख्या बड़ी है"] [)] [|]
-[}]
+Current locale: en_US.UTF-8
+
+
+Lexical Analysis:
+Keyword: पूर्ण
+Variable: संख्या
+Operator: =
+Number: 10
+End of Line: |
+Keyword: यदि
+Special Symbol: (
+Variable: संख्या
+Operator: >
+Number: 5
+Special Symbol: )
+Special Symbol: {
+Keyword: लेख
+Special Symbol: (
+String: "संख्या बड़ी है"
+Special Symbol: )
+End of Line: |
+Special Symbol: }
+End of Input: EOF
+
 ```
 
 ---
+
 
 ## 🛠️ Running the ShAKti Lexer  
 
-### 📥 Step 1: Organizing Files  
-Ensure you have the following files in the same directory:  
-- `lexer.c` → The C program implementing the lexer.  
-- `input.shakti` → A test file containing ShAKti code to be tokenized.  
+### 📁 Preparing Your Environment  
+Ensure the following files are in the same directory:  
 
-Example `input.shakti`:  
-```shakti
-पूर्ण संख्या = 10|
-यदि (संख्या > 5) {
-    लेख("संख्या बड़ी है")|
-}
+- **Source Files:** `file_io.c`, `file_io.h`, `Lexer.c`, `Lexer.h`, `main.c`, `Makefile`, `Tokens.c`, `Tokens.h`, `utils.c`, `utils.h`  
+- **Input File:** `Short_Input.txt` (Contains the ShAKti code to be tokenized)  
+
+---
+
+### 🚀 Compilation & Execution  
+
+#### 🔹 **For Linux/macOS Users**  
+
+1️⃣ **Install GCC (If Not Installed)**  
+```bash
+sudo apt update && sudo apt install gcc -y   # Ubuntu/Debian  
+sudo dnf install gcc -y                      # Fedora  
+sudo pacman -S gcc                           # Arch  
+```
+
+2️⃣ **Navigate to the Lexer Directory**  
+```bash
+cd /path/to/ShAKti/lexer
+```
+
+3️⃣ **Compile the Lexer**  
+```bash
+make
+```
+This compiles all necessary files and generates the `ShAKti_Lexer` executable.
+
+4️⃣ **Run the Lexer with an Input File**  
+```bash
+./ShAKti_Lexer Short_Input.txt
 ```
 
 ---
 
-## 🖥️ Windows Instructions  
+#### 🔹 **For Windows Users**  
 
-### 1️⃣ Install a C Compiler (If Not Installed)  
-- Install **MinGW** (Minimalist GNU for Windows) and add it to your PATH.  
-- Alternatively, install **TDM-GCC** or use **MSYS2**.  
+1️⃣ **Install a C Compiler (If Not Installed)**  
+- Install **MinGW-w64** and ensure `gcc.exe` is added to your system's **PATH**.  
+- Alternatively, install **MSYS2** and set up `mingw-w64`.  
 
-### 2️⃣ Open Command Prompt  
-Navigate to the directory where `lexer.c` and `input.shakti` are located:  
+2️⃣ **Open Command Prompt and Navigate to the Lexer Directory**  
 ```cmd
-cd path\to\your\lexer\folder
+cd C:\path\to\shakti\lexer
 ```
 
-### 3️⃣ Compile the Lexer  
-Use GCC to compile the lexer:  
+3️⃣ **Compile the Lexer**  
 ```cmd
-gcc lexer.c -o lexer.exe
+mingw32-make
 ```
-If there are no errors, an executable **`lexer.exe`** will be created.
+This will generate an executable file: `ShAKti_Lexer.exe`.
 
-### 4️⃣ Run the Lexer with Input File  
+4️⃣ **Run the Lexer with an Input File**  
 ```cmd
-lexer.exe input.shakti
-```
-The output should display the tokenized form of the input file.
-
----
-
-## 🐧 Linux Instructions  
-
-### 1️⃣ Install GCC (If Not Installed)  
-If you don't have GCC, install it using:  
-```bash
-sudo apt update && sudo apt install gcc -y   # Ubuntu/Debian
-sudo dnf install gcc -y                      # Fedora
-sudo pacman -S gcc                           # Arch
-```
-
-### 2️⃣ Open Terminal & Navigate to Directory  
-```bash
-cd /path/to/your/lexer/folder
-```
-
-### 3️⃣ Compile the Lexer  
-```bash
-gcc lexer.c -o lexer
-```
-
-### 4️⃣ Run the Lexer with Input File  
-```bash
-./lexer input.shakti
+ShAKti_Lexer.exe Short_Input.txt
 ```
 
 ---
 
-## 🔎 Expected Output  
-If the lexer correctly tokenizes the input, the output should look like:  
+### 🎯 Expected Output  
+If the lexer functions correctly, the output should resemble:  
 ```
-[पूर्ण] [संख्या] [=] [10] [|]
-[यदि] [(] [संख्या] [>] [5] [)] [{]
-[लेख] [(] ["संख्या बड़ी है"] [)] [|]
-[}]
+Current locale: en_US.UTF-8
+
+
+Lexical Analysis:
+Keyword: पूर्ण
+Variable: संख्या
+Operator: =
+Number: 10
+End of Line: |
+Keyword: यदि
+Special Symbol: (
+Variable: संख्या
+Operator: >
+Number: 5
+Special Symbol: )
+Special Symbol: {
+Keyword: लेख
+Special Symbol: (
+String: "संख्या बड़ी है"
+Special Symbol: )
+End of Line: |
+Special Symbol: }
+End of Input: EOF
+
 ```
 
 ---
 
-## 🛠️ Debugging Issues  
-- If you get `"gcc not recognized"` (Windows), ensure GCC is added to your **PATH**.  
-- If you see `"permission denied"` (Linux), make the file executable:  
+### 🔎 Debugging Issues  
+
+- **"gcc not recognized" (Windows)** → Ensure MinGW is installed and added to your system’s **PATH**.  
+- **"Permission denied" (Linux/macOS)** → Grant executable permission:  
   ```bash
-  chmod +x lexer
+  chmod +x ShAKti_Lexer
   ```
+- **"No such file or directory"** → Ensure you're running the command in the correct directory.  
+
 ---
 
 🚀 **You're now ready to tokenize ShAKti code!** 🎉
