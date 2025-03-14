@@ -23,6 +23,8 @@ extern wchar_t variables[100][100];       // Regular variables
 extern int variable_count;                // Count of declared variables
 extern wchar_t functions[100][100];       // Function names
 extern int function_count;                // Count of declared functions
+extern wchar_t class_variables[100][100];       // Class variables
+extern int class_variable_count;                // Count of declared Class variables              // Count of declared functions
 
 // Declaration of utility functions used in lexer.c
 int isFunctionDeclared(const wchar_t *word);
