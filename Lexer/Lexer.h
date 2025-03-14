@@ -29,5 +29,5 @@ extern int class_variable_count;                // Count of declared Class varia
 // Declaration of utility functions used in lexer.c
 int isFunctionDeclared(const wchar_t *word);
 int isVariableDeclared(const wchar_t *word);
-
+int isClassVariableDeclared(const wchar_t *word);
 #endif // LEXER_H
