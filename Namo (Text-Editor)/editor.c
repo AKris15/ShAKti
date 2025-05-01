@@ -148,16 +148,10 @@ static void editor_create_first_new_line(Editor *editor)
     }
 }
 
-void editor_insert_text_before_cursor(Editor *editor, const char *text) {
-    size_t len = strlen(text);
-    for (size_t i = 0; i < len; ) {
-        int char_len = utf8_char_len(text[i]);
-        if (char_len == 0) break;
 
-        // Insert the UTF-8 character into the editor
-        editor_insert_char(editor, text + i, char_len);
-        i += char_len;
-    }
+void editor_insert_text_before_cursor(Editor *editor, const char *text) {
+    editor_create_first_new_line(editor);
+    line_insert_text_before(&editor->lines[editor->cursor_row], text, &editor->cursor_col);
 }
 
 void editor_backspace(Editor *editor) {
