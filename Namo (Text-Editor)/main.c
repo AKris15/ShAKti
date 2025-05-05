@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-
 #include <SDL.h>
 
 #include "./la.h"
@@ -11,6 +10,13 @@
 #include "./stb_image.h"
 
 #include "./editor.h"
+#define INITIAL_WIDTH 1200
+#define INITIAL_HEIGHT 800
+#define MIN_WIDTH 800
+#define MIN_HEIGHT 600
+#define MAX_WIDTH 1600
+#define MAX_HEIGHT 1200
+#define RESIZE_SPEED 0.2f 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 #define FPS 60
@@ -18,6 +24,12 @@
 
 #define FONT_WIDTH 128
 #define FONT_HEIGHT 64
+#define INITIAL_WIDTH 1200
+#define INITIAL_HEIGHT 800
+
+#define MAX_WIDTH 1600
+#define MAX_HEIGHT 1200
+
 #define FONT_COLS 18
 #define FONT_ROWS 7
 #define FONT_CHAR_WIDTH  (FONT_WIDTH  / FONT_COLS)
@@ -196,6 +208,7 @@ void usage(FILE *stream)
     fprintf(stream, "Usage: te [FILE-PATH]\n");
 }
 
+
 int main(int argc, char **argv)
 {
     const char *file_path = NULL;
@@ -215,9 +228,9 @@ int main(int argc, char **argv)
     SDL_Renderer *renderer =
         scp(SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED));
 
-    Font font = font_load_from_file(renderer, "./charmap-oldschool_white.png");
-
-    bool quit = false;
+	Font font = font_load_from_file(renderer, "./charmap-oldschool_white.png");
+      
+     bool quit = false;
     while (!quit) {
         const Uint32 start = SDL_GetTicks();
      
@@ -272,7 +285,7 @@ int main(int argc, char **argv)
                 case SDLK_RIGHT: {
                     editor.cursor_col += 1;
                 }
-                break;
+               break;
                 }
             }
             break;
@@ -289,6 +302,8 @@ int main(int argc, char **argv)
                 vec2f((float) editor.cursor_col * FONT_CHAR_WIDTH * FONT_SCALE,
                       (float) editor.cursor_row * FONT_CHAR_HEIGHT * FONT_SCALE);
 
+
+	    
             camera_vel = vec2f_mul(
                              vec2f_sub(cursor_pos, camera_pos),
                              vec2fs(2.0f));
