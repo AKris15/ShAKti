@@ -5,7 +5,7 @@ PKG_CFLAGS = $(shell pkg-config --cflags sdl2 SDL2_ttf freetype2 harfbuzz)
 PKG_LIBS = $(shell pkg-config --libs sdl2 SDL2_ttf freetype2 harfbuzz)
 
 # Source files and target
-SRC = main.c la.c lexer.c editor.c
+SRC = main.c la.c editor.c
 OBJ = $(SRC:.c=.o)
 TARGET = NAmo
 
